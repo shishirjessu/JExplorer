@@ -7,18 +7,39 @@ import time
 import sqlite3
 
 BASE_URL = "http://www.j-archive.com/showgame.php?game_id="
-BREAK = 1 # wait a bit between requests, so as not to overload server
+BREAK = 0.1  # wait a bit between requests, so as not to overload server
+sqlite_file = "jeopardy.db"
+db = sqlite3.connect(sqlite_file)
+cur = db.cursor()
+
 
 def main():
     current_directory = makeNewDir()
     os.chdir(current_directory)
-    start = pickStart()
-    downloadGames(5493)
+    start = pickStart()  # which game do we start from?
 
+    start = downloadGames(start)
+    cur.execute("INSERT INTO start (start_index) VALUES(?)", (start,))  # insert new start
+    db.commit()
+
+
+# creates the sqlite database, and a table inside the table for the start point
 def pickStart():
-    return 1
+    # create and store in table
+    cur.execute('CREATE TABLE IF NOT EXISTS start(start_index INTEGER)')
+    cur.execute('SELECT * FROM start')
+    recent = cur.fetchall()
 
-#Creates folder in which the Jeopardy HTML files will be stored
+    if len(recent) == 0:
+        cur.execute('INSERT INTO start VALUES(1)')
+        db.commit()
+        return 1
+    else:
+        data = recent[len(recent) - 1]
+        return data[0]
+
+
+# Creates folder in which the Jeopardy HTML files will be stored
 def makeNewDir():
     current_directory = os.path.dirname(os.path.realpath(__file__))
     new_dir = os.path.join(current_directory, "game_files")
@@ -29,30 +50,31 @@ def makeNewDir():
     return new_dir
 
 
-#loops through all the present games and downloads them
+# loops through all the existing games and downloads them
 def downloadGames(start_id):
     current_id = start_id
-    done = False # set to true when we run out of games
+    done = False  # set to true when we run out of games
     while not done:
         current_url = BASE_URL + str(current_id)
         content = urllib2.urlopen(current_url)
         html = content.read()
         if "ERROR: No game" in html:
-            done = True # we have reached the last existing game
+            done = True  # we have reached the last existing game
         else:
             saveGame(current_id, html)
             current_id += 1
+            print(current_id)
             time.sleep(BREAK)
 
-    return current_id # the last game ID for which a game existed
+    return current_id  # the last game ID for which a game existed
+
 
 # saves a single game to the game_files directory
 def saveGame(game_id, html):
-    current_url = BASE_URL + str(game_id)
     file_name = "game_" + str(game_id)
     try:
-        file = open(file_name, "w+")
-        file.write(html)
+        f = open(file_name, "w+")
+        f.write(html)
     except IOError:
         print "Could not write file"
 
