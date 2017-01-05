@@ -14,17 +14,17 @@ cur = db.cursor()
 
 
 def main():
-    current_directory = makeNewDir()
+    current_directory = make_new_dir()
     os.chdir(current_directory)
-    start = pickStart()  # which game do we start from?
+    start = pick_start()  # which game do we start from?
 
-    start = downloadGames(start)
+    start = download_games(start)
     cur.execute("INSERT INTO start (start_index) VALUES(?)", (start,))  # insert new start
     db.commit()
 
 
 # creates the sqlite database, and a table inside the table for the start point
-def pickStart():
+def pick_start():
     # create and store in table
     cur.execute('CREATE TABLE IF NOT EXISTS start(start_index INTEGER)')
     cur.execute('SELECT * FROM start')
@@ -40,7 +40,7 @@ def pickStart():
 
 
 # Creates folder in which the Jeopardy HTML files will be stored
-def makeNewDir():
+def make_new_dir():
     current_directory = os.path.dirname(os.path.realpath(__file__))
     new_dir = os.path.join(current_directory, "game_files")
     if not os.path.exists(new_dir):
@@ -51,7 +51,7 @@ def makeNewDir():
 
 
 # loops through all the existing games and downloads them
-def downloadGames(start_id):
+def download_games(start_id):
     current_id = start_id
     done = False  # set to true when we run out of games
     while not done:
@@ -61,7 +61,7 @@ def downloadGames(start_id):
         if "ERROR: No game" in html:
             done = True  # we have reached the last existing game
         else:
-            saveGame(current_id, html)
+            save_game(current_id, html)
             current_id += 1
             print(current_id)
             time.sleep(BREAK)
@@ -70,7 +70,7 @@ def downloadGames(start_id):
 
 
 # saves a single game to the game_files directory
-def saveGame(game_id, html):
+def save_game(game_id, html):
     file_name = "game_" + str(game_id)
     try:
         f = open(file_name, "w+")
