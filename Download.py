@@ -5,16 +5,17 @@ import os
 import urllib2
 import time
 import sqlite3
+import func
 
 BASE_URL = "http://www.j-archive.com/showgame.php?game_id="
 BREAK = 0.1  # wait a bit between requests, so as not to overload server
-sqlite_file = "jeopardy.db"
-db = sqlite3.connect(sqlite_file)
+sql_file = "jeopardy.db"
+db = sqlite3.connect(sql_file)
 cur = db.cursor()
 
 
 def main():
-    current_directory = make_new_dir()
+    current_directory = func.make_new_dir()
     os.chdir(current_directory)
     start = pick_start()  # which game do we start from?
 
@@ -23,7 +24,7 @@ def main():
     db.commit()
 
 
-# creates the sqlite database, and a table inside the table for the start point
+# creates the sql database, and a table inside the table for the start point
 def pick_start():
     # create and store in table
     cur.execute('CREATE TABLE IF NOT EXISTS start(start_index INTEGER)')
@@ -37,17 +38,6 @@ def pick_start():
     else:
         data = recent[len(recent) - 1]
         return data[0]
-
-
-# Creates folder in which the Jeopardy HTML files will be stored
-def make_new_dir():
-    current_directory = os.path.dirname(os.path.realpath(__file__))
-    new_dir = os.path.join(current_directory, "game_files")
-    if not os.path.exists(new_dir):
-        os.mkdir(new_dir)
-    else:
-        print "Path already exists"
-    return new_dir
 
 
 # loops through all the existing games and downloads them
