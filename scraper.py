@@ -45,7 +45,7 @@ def process_games(cur, db):
     start = recent[len(recent) - 2][0]
     end = recent[len(recent) - 1][0]
 
-    for x in range(4434, end):  # iterate through every file we have after downloading
+    for x in range(5410, 5430):  # iterate through every file we have after downloading
         print (x)  # print current iteration
         file_name = "game_" + str(x)
         f = open(file_name, "r")
@@ -63,8 +63,8 @@ def process_games(cur, db):
             process_round(parser, "jeopardy_round", x, cur)
             process_round(parser, "double_jeopardy_round", x, cur)
             process_final_round(parser, x, cur)
-            db.commit()
 
+    db.commit()
 
 # processes the Jeopardy and Double Jeopardy rounds
 def process_round(parser, round_id, game_id, cur):
