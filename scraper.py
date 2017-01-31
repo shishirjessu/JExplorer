@@ -45,7 +45,7 @@ def process_games(cur, db):
     start = recent[len(recent) - 2][0]
     end = recent[len(recent) - 1][0]
 
-    for x in range(5410, 5430):  # iterate through every file we have after downloading
+    for x in range(start, end):  # iterate through every file we have after downloading
         print (x)  # print current iteration
         file_name = "game_" + str(x)
         f = open(file_name, "r")
